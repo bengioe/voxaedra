@@ -10,20 +10,12 @@ var _draw_interval;
 function loaded(){
     setupCanvas("glcontext");
     setupShaders();
-    //temp_voxel_sprite = new VoxelSprite([[0,0,0, 1,0,0],
-	//[0,0,1, 0,1,0]]);
-    derp = {};
-    var n = 3;
-    console.log(n*n*n);
-    for(var i=0;i<n*n*n;i++){
-        derp[[i%n,Math.floor(i/n)%n,Math.floor(i/(n*n))]] = 
-	     [Math.sin(i)+Math.cos(i),Math.cos(i)*Math.cos(i)+i%3,(i+1)%2];
-    }
-    console.log(derp)
+
     loadBinaryFile("models/person.vobj",function(data){
 	temp_voxel_sprite = loadVOBJ(data).sprite;
 	_draw_interval = setInterval(drawFrame,15);
     });
+
     chunk = new Chunk();
 }
 function stop(){

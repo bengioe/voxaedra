@@ -152,7 +152,7 @@ function VoxelSprite(voxels){
 	rawSprite.destroy();
     }
     var end = new Date().getTime();
-    console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
+    //console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
 }
 /*
     for(var i=0;i<voxels.length;i++){

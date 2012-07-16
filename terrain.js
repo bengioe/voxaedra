@@ -29,29 +29,41 @@ var Terrain = new (function(){
     
 })();
 
+var derp = 0, herp =0;
 function Chunk(){
     var blocks = {};
-    blocks[[0,0,0]] = new Block()
+    var t0 = new Date().getTime();
+    for (var i=0;i<8;i++){
+    for (var j=0;j<8;j++){
+	blocks[[i,j,0]] = new Block();
+    }}
+    console.log(new Date().getTime()-t0);
+    console.log(derp +"+"+herp);
     this.draw = function(){
-	for (i in blocks){
-	    viewMatrix = mat4.translate(viewMatrix, [0,0,-8]);
-	    blocks[i].draw();
-	    viewMatrix = mat4.translate(viewMatrix, [0,0,8]);
-	}
+	for (var i=0;i<8;i++){
+	for (var j=0;j<8;j++){
+	    viewMatrix = mat4.translate(viewMatrix, [i*8,j*8,-8]);
+	    blocks[[i,j,0]].draw();
+	    viewMatrix = mat4.translate(viewMatrix, [-i*8,-j*8,8]);
+	}}
     }
 }
 
+var seed = 142857;
+
 function Block(){
+    var t0 = new Date().getTime();
     var voxels = {};
-    var seed = 142857;
     for (var i=0;i<8;i++){
     for (var j=0;j<8;j++){
-    for (var k=0;k<8;k++){
+    for (var k=0;k<16;k++){
 	voxels[[i,j,k]]=terrainTypedColor(1,seed).map(function(x){return x/255.});
-	seed = 3 + (seed<<1);
-	console.log(seed);
+	seed = seed + (seed<<3);
     }}}
+    derp+=new Date().getTime()-t0;
+    var t0 = new Date().getTime();
     var sprite = new VoxelSprite(voxels);
+    herp+=new Date().getTime()-t0;
     this.draw = sprite.draw;
 }
 
