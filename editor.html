@@ -1,0 +1,90 @@
+<html>
+<head>
+<script type="shader/vertex" id="vshader">
+attribute vec3 aVertexPos;
+attribute vec3 aVertexColor;
+attribute vec3 aVertexNormal;
+
+uniform mat4 uViewMatrix;
+uniform mat4 uProjMatrix;
+
+varying vec3 vColor;
+varying vec3 vNormal;
+
+void main(void){
+    gl_Position = uProjMatrix * uViewMatrix * vec4(aVertexPos, 1.0);
+    vColor = aVertexColor;
+    vNormal = aVertexNormal;
+}
+</script>
+<script type="shader/fragment" id="fshader">
+precision mediump float;
+
+varying vec3 vColor;
+varying vec3 vNormal;
+
+void main(void){
+    const vec3 lightDirection = vec3(0.48507125,  0.72760688,  0.48507125);
+    float DiffuseTerm = clamp(dot(vNormal, lightDirection),0.0,1.0) * 0.3;
+    gl_FragColor = vec4(vColor * 0.6, 1.0) + vec4(vColor * DiffuseTerm, 1.0);
+}
+</script>
+<script type="text/javascript" src="gl-matrix-min.js"></script>
+<script type="text/javascript" src="util.js"></script>
+<script type="text/javascript" src="bacchus.js"></script>
+<script type="text/javascript" src="editor.js"></script>
+<script type="text/javascript" src="jscolor/jscolor.js"></script>
+<style>
+.transcell {
+background-image:url('images/trans.png');
+}
+td{
+width: 12px;
+height:12px;
+}
+</style>
+</head>
+<body onload="loaded()">
+  <center>
+    <canvas id="glcontext" width="300px" height="300px"></canvas>
+    <div id="glerrormessage"></div>
+    <div>
+      <input class="color" id="colorpick" value="000000"></input>
+      <span id="grid_mousepos"></span><br/>
+      R to erase, F to pick color <br/>
+      Use these buttons or QWEASD keys to move around:<br/>
+      <table border="0">
+	<tr>
+	  <td><input type="button" onclick="grid_forw()" value="F"></td>
+	  <td><input type="button" onclick="grid_up()" value="U"></td>
+	  <td><input type="button" onclick="grid_back()" value="B"></td>
+	</tr>	  
+	<tr>
+	  <td><input type="button" onclick="grid_left()" value="L"></td>
+	  <td><input type="button" onclick="grid_down()" value="D"></td>
+	  <td><input type="button" onclick="grid_right()" value="R"></td>
+	</tr>	  
+      </table>
+      <table border="0" cellpadding="0" cellspacing="1" id="colortable">
+	<tr>
+	  <td bgcolor="#ff0000"/><td bgcolor="#ffff00"/>
+	</tr>
+	<tr>
+	  <td/><td/>
+	</tr>
+      </table>
+    </div>
+
+    Load file:<input type="file" id="files" name="files[]"/><br/>
+    <input type="button" onclick="save_model()" value="Save"/>
+    <a id="datalink" href="#">"Save As" this link once you press the Save button</a>
+    <output id="list"></output>
+
+    <script>
+    </script>
+  </center>
+  <div id="log"></div>
+  <div id="mousepos"></div>
+  
+</body>
+</html>

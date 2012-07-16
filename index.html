@@ -1,0 +1,52 @@
+<html>
+<head>
+<script type="shader/vertex" id="vshader">
+attribute vec3 aVertexPos;
+attribute vec3 aVertexColor;
+attribute vec3 aVertexNormal;
+
+uniform mat4 uViewMatrix;
+uniform mat4 uProjMatrix;
+
+varying vec3 vColor;
+varying vec3 vNormal;
+
+void main(void){
+    gl_Position = uProjMatrix * uViewMatrix * vec4(aVertexPos, 1.0);
+    vColor = aVertexColor;
+    vNormal = aVertexNormal;
+}
+</script>
+<script type="shader/fragment" id="fshader">
+precision mediump float;
+
+varying vec3 vColor;
+varying vec3 vNormal;
+
+void main(void){
+    const vec3 lightDirection = vec3(0.48507125,  0.72760688,  0.48507125);
+    float DiffuseTerm = clamp(dot(vNormal, lightDirection),0.0,1.0) * 0.1;
+    gl_FragColor = vec4(vColor*0.6, 1.0) + vec4(vColor*DiffuseTerm, 1.0);
+}
+</script>
+<!-- Util scripts !-->
+<script type="text/javascript" src="gl-matrix-min.js"></script>
+<script type="text/javascript" src="util.js"></script>
+<script type="text/javascript" src="bacchus.js"></script>
+
+<script type="text/javascript" src="main.js"></script>
+
+<!-- Game libraries !-->
+<script type="text/javascript" src="terrain.js"></script>
+
+</head>
+<body onload="loaded()">
+  <center>
+    <canvas id="glcontext" width="300px" height="300px"></canvas>
+    <div id="glerrormessage"></div>
+  </center>
+  <div id="log"></div>
+  <div id="mousepos"></div>
+  
+</body>
+</html>
