@@ -22,7 +22,9 @@ var projMatrix = mat4.create();
 // rho, theta, phi
 var camAngles = [30, 0.5, 0.5];
 var camPos = [10,-20,-60];
-
+var camRay = [0,0,0.1];
+var viewport = [0,0,300,300];
+var mouseWinPos = [0,0];
 
 /* 
  * Create a static object in a world from a voxel model
@@ -154,34 +156,7 @@ function VoxelSprite(voxels){
     var end = new Date().getTime();
     //console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
 }
-/*
-    for(var i=0;i<voxels.length;i++){
-	var vi = voxels[i];
-	// a cube has up to 6 neighbors
-	var hasNeighbors = [0,0,0,0,0,0];
-	var n = 0;
-	for(var j=0;j<voxels.length;j++){
-	    if (i==j){continue;}
-	    var vj = voxels[j];
-	    for(var k=0;k<6;k++){
-		d = _cubedelta[k];
-		if (vi[0]+d[0] == vj[0] && 
-		    vi[1]+d[1] == vj[1] && 
-		    vi[2]+d[2] == vj[2]){
-		    hasNeighbors[k] = 1; 
-		} 
-	    }
-	    if (hasNeighbors.sum()==6){
-		break;
-	    }
-	}
-	for (var j=6;j--;){
-	    if (!hasNeighbors[j]){
-		quads.push([vi,j]);
-	    }
-	}
-    }
-    */
+
 
 /**
  * Create a `draw`able object from a list of 
@@ -266,7 +241,9 @@ function setupCanvas(can_id){
     canvas.onmousemove = function(event){
 	var mousex = event.clientX - canvas.offsetLeft;
 	var mousey = event.clientY - canvas.offsetTop;
-	document.getElementById("mousepos").innerHTML = mousex+":"+mousey+":"+mousedown[2]+":"+mousedown;
+	mouseWinPos = [mousex,mousey];
+	document.getElementById("mousepos").innerHTML = mousex+":"+
+	    mousey+":"+camRay+":";
 	if (mousedown[2]){
 	    camAngles[2]+=0.02*(lastmousepos[0]-mousex);
 	    camAngles[1]+=0.02*(lastmousepos[1]-mousey);

@@ -13,7 +13,7 @@ function loaded(){
 
     loadBinaryFile("models/person.vobj",function(data){
 	temp_voxel_sprite = loadVOBJ(data).sprite;
-	_draw_interval = setInterval(drawFrame,15);
+	_draw_interval = setInterval(drawFrame,100);
     });
 
     chunk = new Chunk();
@@ -22,8 +22,84 @@ function stop(){
     clearInterval(_draw_interval);
 }
 
-
+function voxelUnderMouse(){
+    //eye = eye.add(0.5);
+    var eye = vec3.add(camPos,[0.5,0.5,0.5]);
+    var at = camPos.map(Math.floor);
+    var sideInto = [0,0,0];
+    var lastSideInto = [0,0,0];
+    var step = camRay.map(function(x){return x>=0?1:-1});
+    var target = camRay.map(function(x){return x>=0?1:0});
+    var iter=0;
+    do{
+        if (at[2]<=0){
+            //lastUnderMouse = blockmatrix.g(at.asInt());
+            return at;
+        }
+        var tx = (1.*at[0]+target[0]-eye[0])/camRay[0];
+        var ty = (1.*at[1]+target[1]-eye[1])/camRay[1];
+        var tz = (1.*at[2]+target[2]-eye[2])/camRay[2];
+        var t = 1.0;
+        if (tx<ty && tx<tz){
+            t=tx;
+            at[0]+=step[0];
+            //if (sideInto!=null){sideInto.set(stepX,0,0);}
+        }else if (ty<=tx && ty<=tz){
+            t=ty;
+            at[1]+=step[1];
+            //if (sideInto!=null){sideInto.set(0,stepY,0);}
+        }else{
+            t=tz;
+            at[2]+=step[2];
+            //if (sideInto!=null){sideInto.set(0,0,stepZ);}
+        }
+	console.log(at+":"+t);
+        eye = vec3.add(eye,vec3.scale(camPos,t));
+    }while(iter++<256);
+    //sideInto.set(lastSideInto);
+    return null;//lastUnderMouse.pos;
+}
+function unproject(winx, winy, winz) {
+    // winz is either 0 (near plane), 1 (far plane) or somewhere in between.
+    // if it's not given a value we'll produce coords for both.
+    if (typeof(winz) == "number") {
+	
+        var inf = [];
+        var pm = viewMatrix, mm = projMatrix;
+        var viewport = [0, 0, 300, 300];
+	
+        //Calculation for inverting a matrix, compute projection x modelview; then compute the inverse
+        var m = mat4.set(mm, mat4.create());
+        
+        mat4.inverse(m, m); // WHY do I have to do this? --see Jax.Context#reloadMatrices
+        mat4.multiply(pm, m, m);
+        mat4.inverse(m, m);
+        // Transformation of normalized coordinates between -1 and 1
+        inf[0]=(winx-viewport[0])/viewport[2]*2.0-1.0;
+        inf[1]=(winy-viewport[1])/viewport[3]*2.0-1.0;
+        inf[2]=2.0*winz-1.0;
+        inf[3]=1.0;
+	
+        //Objects coordinates
+        var out = vec4.create();
+        mat4.multiplyVec4(m, inf, out);
+        if(out[3]==0.0)
+            return null;
+	
+        out[3]=1.0/out[3];
+        return vec3.normalize(
+	    [out[0]*out[3], out[1]*out[3], -out[2]*out[3]]);
+    }
+    else{
+        return [unproject(winx, winy, 0), unproject(winx, winy, 1)];
+    }
+}
 function drawFrame(){
+    if (drawFrame.timeSum === undefined){
+	drawFrame.timeSum = 0;
+	drawFrame.timeLast = new Date().getTime();
+	drawFrame.nFrames = 0;
+    }
     var start = new Date().getTime();
 
     camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
@@ -35,12 +111,20 @@ function drawFrame(){
     mat4.perspective(45, canvas.width / canvas.height, 0.01, 1000.0, projMatrix);
     mat4.identity(viewMatrix);
 
-    //mat4.translate(viewMatrix, camPos);
     viewMatrix = mat4.lookAt(camPos,[0,0,0], [0,0,1])
+    camRay = unproject(mouseWinPos[0],
+		       mouseWinPos[1], 0);
     temp_voxel_sprite.draw();
     chunk.draw();
-    
-    document.getElementById("log").innerHTML = new Date().getTime() - start;
+    drawFrame.timeSum += new Date().getTime() - start;
+    drawFrame.nFrames += 1;
+    if (drawFrame.timeLast + 1000 < start){
+	document.getElementById("log").innerHTML = drawFrame.timeSum +
+	    "ms in " + drawFrame.nFrames + " frames";
+	drawFrame.timeSum = 0;
+	drawFrame.timeLast = start;
+	drawFrame.nFrames = 0;
+    }
 }
 
 var _key = {

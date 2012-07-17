@@ -40,11 +40,12 @@ function Chunk(){
     console.log(new Date().getTime()-t0);
     console.log(derp +"+"+herp);
     this.draw = function(){
+	var s = Block.SIZE;
 	for (var i=0;i<8;i++){
 	for (var j=0;j<8;j++){
-	    viewMatrix = mat4.translate(viewMatrix, [i*8,j*8,-8]);
+	    viewMatrix = mat4.translate(viewMatrix, [i*s,j*s,-s]);
 	    blocks[[i,j,0]].draw();
-	    viewMatrix = mat4.translate(viewMatrix, [-i*8,-j*8,8]);
+	    viewMatrix = mat4.translate(viewMatrix, [-i*s,-j*s,s]);
 	}}
     }
 }
@@ -54,9 +55,9 @@ var seed = 142857;
 function Block(){
     var t0 = new Date().getTime();
     var voxels = {};
-    for (var i=0;i<8;i++){
-    for (var j=0;j<8;j++){
-    for (var k=0;k<16;k++){
+    for (var i=0;i<Block.SIZE;i++){
+    for (var j=0;j<Block.SIZE;j++){
+    for (var k=0;k<Block.SIZE;k++){
 	voxels[[i,j,k]]=terrainTypedColor(1,seed).map(function(x){return x/255.});
 	seed = seed + (seed<<3);
     }}}
@@ -66,12 +67,13 @@ function Block(){
     herp+=new Date().getTime()-t0;
     this.draw = sprite.draw;
 }
+Block.SIZE = 8;
 
 
 function terrainTypedColor(type, seed){
     if (type==1){//grass
 	return [12 + Math.sin(seed)*12,
-		180 + Math.cos(seed<<2)*40,
+		180 + Math.cos(seed<<2)*20,
 		32 + Math.sin(seed<<3)*12];
     }
     else if (type==2){//nether, black rock
