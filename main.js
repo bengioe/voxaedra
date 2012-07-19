@@ -72,8 +72,8 @@ function unproject(winx, winy, winz) {
         //Calculation for inverting a matrix, compute projection x modelview; then compute the inverse
         var m = mat4.set(mm, mat4.create());
 
-        mat4.inverse(m, m); // WHY do I have to do this? --see Jax.Context#reloadMatrices
-        mat4.multiply(pm, m, m);
+        //mat4.inverse(m, m); // WHY do I have to do this? --see Jax.Context#reloadMatrices
+        mat4.multiply(m, pm, m);
         mat4.inverse(m, m);
         // Transformation of normalized coordinates between -1 and 1
         inf[0]=(winx-viewport[0])/viewport[2]*2.0-1.0;
@@ -91,7 +91,9 @@ function unproject(winx, winy, winz) {
         return [out[0]*out[3], out[1]*out[3], out[2]*out[3]];//);
     }
     else{
-        return vec3.normalize(vec3.subtract(unproject(winx, winy, 0), unproject(winx, winy, 1)));
+	var a = unproject(winx, winy, 0);
+	var b = unproject(winx, winy, 1);
+        return vec3.normalize(vec3.subtract(b, a));
     }
 }
 
@@ -109,15 +111,15 @@ function drawFrame(){
 
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(75, canvas.width / canvas.height, 1, 1000.0, projMatrix);
+    mat4.perspective(45, canvas.width/canvas.height, 1, 1000.0, projMatrix);
     mat4.identity(viewMatrix);
 
     viewMatrix = mat4.lookAt(camPos,[0,0,0], [0,0,1])
-    camRay = unproject(mouseWinPos[0],
-		       mouseWinPos[1]);
     //camRay = vec3.unproject(mouseWinPos,mat4.inverse(viewMatrix,mat4.create()),projMatrix,[0,0,300,300],vec3.create());
     //temp_voxel_sprite.draw();
     chunk.draw();
+    camRay = unproject(mouseWinPos[0],
+		       mouseWinPos[1]);
     drawFrame.timeSum += new Date().getTime() - start;
     drawFrame.nFrames += 1;
     if (drawFrame.timeLast + 1000 < start){
