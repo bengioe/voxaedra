@@ -31,6 +31,7 @@ function voxelUnderMouse(){
     var step = camRay.map(function(x){return x>=0?1:-1});
     var target = camRay.map(function(x){return x>=0?1:0});
     var iter=0;
+    console.log(eye + ":" + at);
     do{
         if (at[2]<=0){
             //lastUnderMouse = blockmatrix.g(at.asInt());
@@ -53,11 +54,12 @@ function voxelUnderMouse(){
             at[2]+=step[2];
             //if (sideInto!=null){sideInto.set(0,0,stepZ);}
         }
-	console.log(at+":"+t);
-        eye = vec3.add(eye,vec3.scale(camPos,t));
+	//console.log(at+":"+t);
+        eye = vec3.add(eye,vec3.scale(camRay,t,vec3.create()),vec3.create());
+//	console.log(eye);
     }while(iter++<256);
     //sideInto.set(lastSideInto);
-    return null;//lastUnderMouse.pos;
+    return [undefined,0,0];//lastUnderMouse.pos;
 }
 function unproject(winx, winy, winz) {
     // winz is either 0 (near plane), 1 (far plane) or somewhere in between.
@@ -67,10 +69,9 @@ function unproject(winx, winy, winz) {
         var inf = [];
         var pm = viewMatrix, mm = projMatrix;
         var viewport = [0, 0, 300, 300];
-	
         //Calculation for inverting a matrix, compute projection x modelview; then compute the inverse
         var m = mat4.set(mm, mat4.create());
-        
+
         mat4.inverse(m, m); // WHY do I have to do this? --see Jax.Context#reloadMatrices
         mat4.multiply(pm, m, m);
         mat4.inverse(m, m);
@@ -86,14 +87,14 @@ function unproject(winx, winy, winz) {
         if(out[3]==0.0)
             return null;
 	
-        out[3]=1.0/out[3];
-        return vec3.normalize(
-	    [out[0]*out[3], out[1]*out[3], -out[2]*out[3]]);
+        out[3]=1.0/out[3];//vec3.normalize(
+        return [out[0]*out[3], out[1]*out[3], out[2]*out[3]];//);
     }
     else{
-        return [unproject(winx, winy, 0), unproject(winx, winy, 1)];
+        return vec3.normalize(vec3.subtract(unproject(winx, winy, 0), unproject(winx, winy, 1)));
     }
 }
+
 function drawFrame(){
     if (drawFrame.timeSum === undefined){
 	drawFrame.timeSum = 0;
@@ -108,13 +109,14 @@ function drawFrame(){
 
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(45, canvas.width / canvas.height, 0.01, 1000.0, projMatrix);
+    mat4.perspective(75, canvas.width / canvas.height, 1, 1000.0, projMatrix);
     mat4.identity(viewMatrix);
 
     viewMatrix = mat4.lookAt(camPos,[0,0,0], [0,0,1])
     camRay = unproject(mouseWinPos[0],
-		       mouseWinPos[1], 0);
-    temp_voxel_sprite.draw();
+		       mouseWinPos[1]);
+    //camRay = vec3.unproject(mouseWinPos,mat4.inverse(viewMatrix,mat4.create()),projMatrix,[0,0,300,300],vec3.create());
+    //temp_voxel_sprite.draw();
     chunk.draw();
     drawFrame.timeSum += new Date().getTime() - start;
     drawFrame.nFrames += 1;

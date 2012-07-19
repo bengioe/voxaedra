@@ -12,7 +12,7 @@ A bit of vocabulary:
 - A TerrainObject, an object in voxel space with various attributes.
 
 Those objects' contructors are defined here. They shouldn't really be
-used externally.
+used externally, except for Terrain.
 
 Additional functions defined here:
 - terrainTypedColor (type,seed)
@@ -25,7 +25,14 @@ Additional functions defined here:
  */
 var Terrain = new (function(){
     var chunks = {};
-
+    this.init = function(){
+	chunks[[0,0,0]] = new Chunk();
+    }
+    this.draw = function(){
+	//viewMatrix = mat4.translate(viewMatrix, [i*8,j*8,-8]);
+	chunk[[0,0,0]].draw();
+	//viewMatrix = mat4.translate(viewMatrix, [-i*8,-j*8,8]);
+    }
     
 })();
 

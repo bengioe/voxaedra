@@ -20,7 +20,7 @@ var viewMatrix = mat4.create();
 var projMatrix = mat4.create();
 
 // rho, theta, phi
-var camAngles = [30, 0.5, 0.5];
+var camAngles = [30, 0.9553166182, 3.141592/4];
 var camPos = [10,-20,-60];
 var camRay = [0,0,0.1];
 var viewport = [0,0,300,300];
@@ -243,7 +243,8 @@ function setupCanvas(can_id){
 	var mousey = event.clientY - canvas.offsetTop;
 	mouseWinPos = [mousex,mousey];
 	document.getElementById("mousepos").innerHTML = mousex+":"+
-	    mousey+":"+camRay+":";
+	    mousey+":"+camRay;
+	    //camRay[0]+","+camRay[1]+","+camRay[2]+":";
 	if (mousedown[2]){
 	    camAngles[2]+=0.02*(lastmousepos[0]-mousex);
 	    camAngles[1]+=0.02*(lastmousepos[1]-mousey);
@@ -265,6 +266,9 @@ function setupCanvas(can_id){
     canvas.addEventListener("mousedown",function(event){
 	if (event.which==3){
 	    mousedown[2]=1;
+	}
+	if (event.which==1){
+	    document.getElementById("mousevoxel").innerHTML = voxelUnderMouse();
 	}
 	event.cancelBubble = true;
 	event.returnValue = false;
