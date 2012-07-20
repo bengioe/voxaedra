@@ -12,7 +12,8 @@ function loaded(){
     setupShaders();
 
     loadBinaryFile("models/person.vobj",function(data){
-	temp_voxel_sprite = loadVOBJ(data).sprite;
+	temp_voxel_sprite = new VoxelSprite({'0,0,0':[1,0,0]});
+	//temp_voxel_sprite = loadVOBJ(data).sprite;
 	_draw_interval = setInterval(drawFrame,100);
     });
 
@@ -31,7 +32,7 @@ function voxelUnderMouse(){
     var step = camRay.map(function(x){return x>=0?1:-1});
     var target = camRay.map(function(x){return x>=0?1:0});
     var iter=0;
-    console.log(eye + ":" + at);
+    //console.log(eye + ":" + at);
     do{
         if (at[2]<=0){
             //lastUnderMouse = blockmatrix.g(at.asInt());
@@ -54,9 +55,9 @@ function voxelUnderMouse(){
             at[2]+=step[2];
             //if (sideInto!=null){sideInto.set(0,0,stepZ);}
         }
-	console.log(at+":"+t);
+	//console.log(at+":"+t);
         eye = vec3.add(eye,vec3.scale(camRay,t,vec3.create()),vec3.create());
-	console.log(eye);
+	//console.log(eye);
     }while(iter++<256);
     //sideInto.set(lastSideInto);
     return [undefined,0,0];//lastUnderMouse.pos;
@@ -116,10 +117,21 @@ function drawFrame(){
 
     viewMatrix = mat4.lookAt(camPos,[0,0,0], [0,0,1])
     //camRay = vec3.unproject(mouseWinPos,mat4.inverse(viewMatrix,mat4.create()),projMatrix,[0,0,300,300],vec3.create());
-    //temp_voxel_sprite.draw();
-    chunk.draw();
     camRay = unproject(mouseWinPos[0],
-		       mouseWinPos[1]);
+		       300-mouseWinPos[1]);
+    mat4.translate(viewMatrix, [0,0,1], viewMatrix);
+    chunk.draw();
+    //mat4.translate(viewMatrix, [0,0,-], viewMatrix);
+    var t = -camPos[2]/camRay[2];
+    var trans = vec3.add(camPos,vec3.scale(camRay,t,vec3.create()),
+			 vec3.create());
+    trans = voxelUnderMouse();
+    console.log(trans);
+    mat4.translate(viewMatrix, trans, viewMatrix);
+    //mat4.translate(viewMatrix, [0,0,-5], viewMatrix);
+    temp_voxel_sprite.draw();
+    mat4.translate(viewMatrix, vec3.scale(trans,-1), viewMatrix);
+
     drawFrame.timeSum += new Date().getTime() - start;
     drawFrame.nFrames += 1;
     if (drawFrame.timeLast + 1000 < start){
