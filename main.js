@@ -23,45 +23,6 @@ function stop(){
     clearInterval(_draw_interval);
 }
 
-function voxelUnderMouse(){
-    //var eye = camPos.map(function(x){return x;})
-    var eye = vec3.add(camPos,[0.5,0.5,0.5]);
-    var at = camPos.map(Math.floor);
-    var sideInto = [0,0,0];
-    var lastSideInto = [0,0,0];
-    var step = camRay.map(function(x){return x>=0?1:-1});
-    var target = camRay.map(function(x){return x>=0?1:0});
-    var iter=0;
-    //console.log(eye + ":" + at);
-    do{
-        if (at[2]<=0){
-            //lastUnderMouse = blockmatrix.g(at.asInt());
-            return at;
-        }
-        var tx = (1.*at[0]+target[0]-eye[0])/camRay[0];
-        var ty = (1.*at[1]+target[1]-eye[1])/camRay[1];
-        var tz = (1.*at[2]+target[2]-eye[2])/camRay[2];
-        var t = 1.0;
-        if (tx<ty && tx<tz){
-            t=tx;
-            at[0]+=step[0];
-            //if (sideInto!=null){sideInto.set(stepX,0,0);}
-        }else if (ty<=tx && ty<=tz){
-            t=ty;
-            at[1]+=step[1];
-            //if (sideInto!=null){sideInto.set(0,stepY,0);}
-        }else{
-            t=tz;
-            at[2]+=step[2];
-            //if (sideInto!=null){sideInto.set(0,0,stepZ);}
-        }
-	//console.log(at+":"+t);
-        eye = vec3.add(eye,vec3.scale(camRay,t,vec3.create()),vec3.create());
-	//console.log(eye);
-    }while(iter++<256);
-    //sideInto.set(lastSideInto);
-    return [undefined,0,0];//lastUnderMouse.pos;
-}
 function unproject(winx, winy, winz) {
     // winz is either 0 (near plane), 1 (far plane) or somewhere in between.
     // if it's not given a value we'll produce coords for both.
@@ -106,29 +67,18 @@ function drawFrame(){
     }
     var start = new Date().getTime();
 
-    camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
-	      camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
-	      camAngles[0]*Math.cos(camAngles[1])]
-
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     mat4.perspective(45, canvas.width/canvas.height, 1, 1000.0, projMatrix);
     mat4.identity(viewMatrix);
 
-    viewMatrix = mat4.lookAt(camPos,[0,0,0], [0,0,1])
-    //camRay = vec3.unproject(mouseWinPos,mat4.inverse(viewMatrix,mat4.create()),projMatrix,[0,0,300,300],vec3.create());
-    camRay = unproject(mouseWinPos[0],
-		       300-mouseWinPos[1]);
+    viewMatrix = mat4.lookAt(camera.getPos(),[0,0,0], [0,0,1])
+    camera.computeRay();
+
     mat4.translate(viewMatrix, [0,0,1], viewMatrix);
     chunk.draw();
-    //mat4.translate(viewMatrix, [0,0,-], viewMatrix);
-    var t = -camPos[2]/camRay[2];
-    var trans = vec3.add(camPos,vec3.scale(camRay,t,vec3.create()),
-			 vec3.create());
-    trans = voxelUnderMouse();
-    console.log(trans);
+    trans = camera.voxelUnderMouse();
     mat4.translate(viewMatrix, trans, viewMatrix);
-    //mat4.translate(viewMatrix, [0,0,-5], viewMatrix);
     temp_voxel_sprite.draw();
     mat4.translate(viewMatrix, vec3.scale(trans,-1), viewMatrix);
 

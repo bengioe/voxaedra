@@ -4,6 +4,7 @@ classes:
   StaticWorldObject  (sprite)
   VoxelSprite        (voxels)
   RawRGBSprite       (vertices,normals,colors,indexes)
+  Camera             ()
 
 functions:
   loadVOBJ           (ArrayBuffer) -> VoxelSprite
@@ -19,10 +20,7 @@ var canvas, gl, globalShader;
 var viewMatrix = mat4.create();
 var projMatrix = mat4.create();
 
-// rho, theta, phi
-var camAngles = [10, 0.9553166182, 3.141592/4];
-var camPos = [10,-20,-60];
-var camRay = [0,0,0.1];
+var camera = undefined;
 var viewport = [0,0,300,300];
 var mouseWinPos = [0,0];
 
@@ -204,6 +202,149 @@ function RawRGBSprite(verts,normals,colors,idxs){
 }
 
 
+function Camera(mouseHandler){
+    // rho, theta, phi
+    var camAngles = [10, 0.9553166182, 3.141592/4];
+    var camPos = [10,-20,-60];
+    var camRay = [0,0,0.1];
+    var self = this;
+    mouseHandler.addDeltaMouseHook(function(dx,dy,mousedown){
+	if (mousedown[2]){
+	    camAngles[2]+=0.02*dx;
+	    camAngles[1]+=0.02*dy;
+	}
+	self.update()
+    });
+    /* this gives the ground pos:
+    var t = -camPos[2]/camRay[2];
+    var trans = vec3.add(camPos,vec3.scale(camRay,t,vec3.create()),
+			 vec3.create());*/
+    mouseHandler.addScrollHook(function(d){
+	if (d>0){
+	    camAngles[0]+=7;
+	}
+	else{
+	    camAngles[0]-=7;
+	}
+	self.update();
+    });
+    this.update = function(){
+	camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
+		  camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
+		  camAngles[0]*Math.cos(camAngles[1])];
+    };
+    this.getPos = function(){
+	return camPos;
+    };
+    this.computeRay = function(){
+	camRay = unproject(mouseWinPos[0],
+			   300-mouseWinPos[1]);
+	return camRay;
+    }
+    this.voxelUnderMouse = function(){
+	//var eye = camPos.map(function(x){return x;})
+	var eye = vec3.add(camPos,[0.5,0.5,0.5],vec3.create());
+	var at = camPos.map(Math.floor);
+	var sideInto = [0,0,0];
+	var lastSideInto = [0,0,0];
+	var step = camRay.map(function(x){return x>=0?1:-1});
+	var target = camRay.map(function(x){return x>=0?1:0});
+	var iter=0;
+	//console.log(eye + ":" + at);
+	do{
+            if (at[2]<=0){
+		//lastUnderMouse = blockmatrix.g(at.asInt());
+		return at;
+            }
+            var tx = (1.*at[0]+target[0]-eye[0])/camRay[0];
+            var ty = (1.*at[1]+target[1]-eye[1])/camRay[1];
+            var tz = (1.*at[2]+target[2]-eye[2])/camRay[2];
+            var t = 1.0;
+            if (tx<ty && tx<tz){
+		t=tx;
+		at[0]+=step[0];
+		//if (sideInto!=null){sideInto.set(stepX,0,0);}
+            }else if (ty<=tx && ty<=tz){
+		t=ty;
+		at[1]+=step[1];
+		//if (sideInto!=null){sideInto.set(0,stepY,0);}
+            }else{
+		t=tz;
+		at[2]+=step[2];
+		//if (sideInto!=null){sideInto.set(0,0,stepZ);}
+            }
+	    //console.log(at+":"+t);
+            eye = vec3.add(eye,vec3.scale(camRay,t,vec3.create()),vec3.create());
+	    //console.log(eye);
+	}while(iter++<256);
+	//sideInto.set(lastSideInto);
+	return [undefined,0,0];//lastUnderMouse.pos;
+    }
+}
+
+function MouseEventHandler(canvas){
+    var mousedown = [0,0,0,0,0,0];
+    var lastmousepos = [0,0];
+    var deltaMouseHooks = {};
+    var deltaMouseCount = 0;
+    var scrollHooks = {};
+    var scrollCount = 0;
+    this.addDeltaMouseHook = function(callback){
+	deltaMouseCount += 1;
+	deltaMouseHooks[deltaMouseCount] = callback;
+	return deltaMouseCount;
+    }
+    this.addScrollHook = function(callback){
+	scrollCount += 1;
+	scrollHooks[scrollCount] = callback;
+	return scrollCount;
+    }
+    var movehook = function(event){
+	var mousex = event.clientX - canvas.offsetLeft;
+	var mousey = event.clientY - canvas.offsetTop;
+	mouseWinPos = [mousex,mousey];
+	document.getElementById("mousepos").innerHTML = mousex+":"+
+	    mousey;//+":"+camRay;
+	for (i in deltaMouseHooks){
+	    deltaMouseHooks[i](lastmousepos[0]-mousex,
+			       lastmousepos[1]-mousey,
+			       mousedown);
+	}
+	lastmousepos = [mousex,mousey];
+    }
+    var scrollhook = function(event){
+	var d = event.detail ? event.detail : -event.wheelDelta;
+	for (i in scrollHooks){
+	    scrollHooks[i](d);
+	}
+    };
+    var downhook = function(event){
+	if (event.which==3){
+	    mousedown[2]=1;
+	}
+	if (event.which==1){
+	    document.getElementById("mousevoxel").innerHTML = voxelUnderMouse();
+	}
+	event.cancelBubble = true;
+	event.returnValue = false;
+	event.stopPropagation();
+	event.preventDefault();
+	return false;
+    }
+
+    var uphook = function(event){
+	if (event.which==3){
+	    mousedown[2]=0;
+	}
+    }
+
+    canvas.onmousemove = movehook
+    canvas.addEventListener("DOMMouseScroll",scrollhook);
+    canvas.addEventListener("mousewheel",scrollhook);
+    canvas.addEventListener("mousedown",downhook,true);
+    canvas.addEventListener("mouseup",uphook,true);
+}
+
 /**
  * loads a VOBJ, Voxel Object, file given an ArrayBuffer
  */
@@ -236,51 +377,8 @@ function loadVOBJ(buffer){
  */
 function setupCanvas(can_id){
     canvas = document.getElementById(can_id);
-    var mousedown = [0,0,0,0,0,0];
-    var lastmousepos = [0,0];
-    canvas.onmousemove = function(event){
-	var mousex = event.clientX - canvas.offsetLeft;
-	var mousey = event.clientY - canvas.offsetTop;
-	mouseWinPos = [mousex,mousey];
-	document.getElementById("mousepos").innerHTML = mousex+":"+
-	    mousey+":"+camRay;
-	    //camRay[0]+","+camRay[1]+","+camRay[2]+":";
-	if (mousedown[2]){
-	    camAngles[2]+=0.02*(lastmousepos[0]-mousex);
-	    camAngles[1]+=0.02*(lastmousepos[1]-mousey);
-	}
-	lastmousepos = [mousex,mousey];
-    }
-    var scrollhook = function(event){
-	var d = event.detail ? event.detail : -event.wheelDelta;
-	if (d>0){
-	    camAngles[0]+=7;
-	}
-	else{
-	    camAngles[0]-=7;
-	}
-    };
-    canvas.addEventListener("DOMMouseScroll",scrollhook);
-    canvas.addEventListener("mousewheel",scrollhook);
-
-    canvas.addEventListener("mousedown",function(event){
-	if (event.which==3){
-	    mousedown[2]=1;
-	}
-	if (event.which==1){
-	    document.getElementById("mousevoxel").innerHTML = voxelUnderMouse();
-	}
-	event.cancelBubble = true;
-	event.returnValue = false;
-	event.stopPropagation();
-	event.preventDefault();
-	return false;
-    },true);
-    canvas.addEventListener("mouseup",function(event){
-	if (event.which==3){
-	    mousedown[2]=0;
-	}
-    },true);
+    var mouseHandler = new MouseEventHandler(canvas);
+    camera = new Camera(mouseHandler);
     canvas.addEventListener("contextmenu",function(event){
 	event.cancelBubble = true;
 	event.returnValue = false;
