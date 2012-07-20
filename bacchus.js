@@ -20,7 +20,7 @@ var viewMatrix = mat4.create();
 var projMatrix = mat4.create();
 
 // rho, theta, phi
-var camAngles = [30, 0.9553166182, 3.141592/4];
+var camAngles = [10, 0.9553166182, 3.141592/4];
 var camPos = [10,-20,-60];
 var camRay = [0,0,0.1];
 var viewport = [0,0,300,300];

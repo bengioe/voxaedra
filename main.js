@@ -23,7 +23,7 @@ function stop(){
 }
 
 function voxelUnderMouse(){
-    //eye = eye.add(0.5);
+    //var eye = camPos.map(function(x){return x;})
     var eye = vec3.add(camPos,[0.5,0.5,0.5]);
     var at = camPos.map(Math.floor);
     var sideInto = [0,0,0];
@@ -54,9 +54,9 @@ function voxelUnderMouse(){
             at[2]+=step[2];
             //if (sideInto!=null){sideInto.set(0,0,stepZ);}
         }
-	//console.log(at+":"+t);
+	console.log(at+":"+t);
         eye = vec3.add(eye,vec3.scale(camRay,t,vec3.create()),vec3.create());
-//	console.log(eye);
+	console.log(eye);
     }while(iter++<256);
     //sideInto.set(lastSideInto);
     return [undefined,0,0];//lastUnderMouse.pos;
