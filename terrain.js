@@ -25,42 +25,72 @@ Additional functions defined here:
  */
 var Terrain = new (function(){
     var chunks = {};
+    this.chunks = chunks;
     this.init = function(){
-	chunks[[0,0,0]] = new Chunk();
+	console.log("Terrain init");
+	chunks[[0,0,0]] = new Chunk(this,[0,0,0]);
+	chunks[[0,0,0]].updateBlocks();
     }
     this.draw = function(){
 	//viewMatrix = mat4.translate(viewMatrix, [i*8,j*8,-8]);
-	chunk[[0,0,0]].draw();
+	chunks[[0,0,0]].draw();
 	//viewMatrix = mat4.translate(viewMatrix, [-i*8,-j*8,8]);
+    }
+    this.getBlock = function(pos){
+	var chunkpos = pos.map(function(x){return Math.floor(x/Chunk.SIZE);});
+	if (chunks.hasOwnProperty(chunkpos)){
+	    var chunkoffset = pos.map(function(x){return x%Chunk.SIZE;});
+	    return chunks[chunkpos].getBlock(chunkoffset);
+	}else{
+	    return {
+		isFullCube:false,
+		draw:function(){}
+	    };	    
+	}
     }
     
 })();
 
 var derp = 0, herp =0;
-function Chunk(){
+function Chunk(terrain, pos){
     var blocks = {};
     var t0 = new Date().getTime();
-    for (var i=0;i<8;i++){
-    for (var j=0;j<8;j++){
-	blocks[[i,j,0]] = new Block();
-    }}
+    for (var i=0;i<Chunk.SIZE;i++){
+    for (var j=0;j<Chunk.SIZE;j++){
+    for (var k=0;k<Chunk.SIZE;k++){
+	blocks[[i,j,k]] = new Block(terrain,[i+pos[0]*Chunk.SIZE,
+					     j+pos[1]*Chunk.SIZE,
+					     k+pos[2]*Chunk.SIZE]);
+    }}}
     console.log(new Date().getTime()-t0);
-    console.log(derp +"+"+herp);
+    console.log(derp+"+"+herp);
+    this.updateBlocks = function(){
+	for (var i=0;i<Chunk.SIZE;i++){
+	for (var j=0;j<Chunk.SIZE;j++){
+        for (var k=0;k<Chunk.SIZE;k++){	
+	    blocks[[i,j,k]].checkIfDrawNeeded();
+	}}}
+    }
+    this.getBlock = function(pos){
+	return blocks[pos];
+    }
     this.draw = function(){
-	var s = Block.SIZE;
-	for (var i=0;i<8;i++){
-	for (var j=0;j<8;j++){
-	    viewMatrix = mat4.translate(viewMatrix, [i*s,j*s,-s]);
-	    blocks[[i,j,0]].draw();
-	    viewMatrix = mat4.translate(viewMatrix, [-i*s,-j*s,s]);
-	}}
+	for (var i=0;i<Chunk.SIZE;i++){
+	for (var j=0;j<Chunk.SIZE;j++){
+        for (var k=0;k<Chunk.SIZE;k++){	
+	    blocks[[i,j,k]].draw();
+	}}}
     }
 }
+Chunk.SIZE = 8;
 
 var seed = 142857;
 
-function Block(){
+function Block(terrain, pos){
+    this.pos = pos
     var t0 = new Date().getTime();
+    this.isFullCube = true;
+    var sprite = null;
     var voxels = {};
     for (var i=0;i<Block.SIZE;i++){
     for (var j=0;j<Block.SIZE;j++){
@@ -68,11 +98,31 @@ function Block(){
 	voxels[[i,j,k]]=terrainTypedColor(1,seed).map(function(x){return x/255.});
 	seed = seed + (seed<<3);
     }}}
-    derp+=new Date().getTime()-t0;
-    var t0 = new Date().getTime();
-    var sprite = new VoxelSprite(voxels);
-    herp+=new Date().getTime()-t0;
-    this.draw = sprite.draw;
+    this.build_sprite = function(){
+	sprite = new VoxelSprite(voxels);
+    }
+    this.checkIfDrawNeeded = function(){
+	if (sprite!==null){return;}
+	if (!terrain.getBlock([pos[0]+1,pos[1],pos[2]]).isFullCube ||
+	    !terrain.getBlock([pos[0]-1,pos[1],pos[2]]).isFullCube ||
+	    !terrain.getBlock([pos[0],pos[1]+1,pos[2]]).isFullCube ||
+	    !terrain.getBlock([pos[0],pos[1]-1,pos[2]]).isFullCube ||
+	    !terrain.getBlock([pos[0],pos[1],pos[2]+1]).isFullCube ||
+	    !terrain.getBlock([pos[0],pos[1],pos[2]-1]).isFullCube){
+	    console.log(pos);
+	    this.build_sprite()
+	    //todo, si c'est plein partout autour, aussi bien disable le sprite
+	}
+	    
+    }
+    this.draw = function(){
+	if (sprite!==null){
+	    var s = Block.SIZE;
+	    viewMatrix = mat4.translate(viewMatrix, [pos[0]*s,pos[1]*s,pos[2]*s-s]);
+	    sprite.draw();
+	    viewMatrix = mat4.translate(viewMatrix, [-pos[0]*s,-pos[1]*s,-pos[2]*s+s]);
+	}
+    }
 }
 Block.SIZE = 8;
 

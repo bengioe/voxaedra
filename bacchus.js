@@ -24,8 +24,11 @@ var camera = undefined;
 var viewport = [0,0,300,300];
 var mouseWinPos = [0,0];
 
-/* 
+/**
+ * @type class
+ *
  * Create a static object in a world from a voxel model
+ *
  * This object holds:
  *  - a position
  *  - a reference to a sprite
@@ -95,14 +98,15 @@ var _cubenormals = [
     [ 0, 0,-1]
 ];
 
-/*
- * Create a sprite from a voxel dict of the form
+/**
+ * @type class
+ * A `draw`able Voxel Sprite
+ * Create and own a RawRGBSprite from a voxel dict of the form
  * { 'x,y,z' : [r,g,b,[a]] , ...}
  * or 
  * { [x,y,z] : [r,g,b,[a]] , ...}
  * note: alpha not supported yet.
  */
-
 function VoxelSprite(voxels){
     var start = new Date().getTime();
     // quads is a list of [pos,delta_index]
@@ -157,6 +161,9 @@ function VoxelSprite(voxels){
 
 
 /**
+ * @type class
+ * RGB drawable 3D object.
+ * 
  * Create a `draw`able object from a list of 
  * vertices, colors, and corresponding triplets of indexes
  * for each triangle
@@ -201,7 +208,10 @@ function RawRGBSprite(verts,normals,colors,idxs){
     }
 }
 
-
+/**
+ * @type class
+ * Camera class
+ */
 function Camera(mouseHandler){
     // rho, theta, phi
     var camAngles = [10, 0.9553166182, 3.141592/4];
@@ -372,8 +382,11 @@ function loadVOBJ(buffer){
 
 
 /**
+ * @type function
  * setup a canvas element to be used by Bacchus
- * puts default mouse listeners on the context
+ *
+ * puts default mouse listeners on the context and creates a global
+ * camera
  */
 function setupCanvas(can_id){
     canvas = document.getElementById(can_id);
