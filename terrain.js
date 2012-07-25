@@ -82,10 +82,10 @@ function Chunk(terrain, pos){
 	}}}
     }
 }
-Chunk.SIZE = 8;
+Chunk.SIZE = 16;
 
 var seed = 142857;
-
+var _noise = new SimplexNoise();
 function Block(terrain, pos){
     this.pos = pos
     var t0 = new Date().getTime();
@@ -95,6 +95,12 @@ function Block(terrain, pos){
     for (var i=0;i<Block.SIZE;i++){
     for (var j=0;j<Block.SIZE;j++){
     for (var k=0;k<Block.SIZE;k++){
+	if (_noise.noise3d((i+pos[0]*Block.SIZE)/80,
+			   (j+pos[1]*Block.SIZE)/80,
+			   (k+pos[2]*Block.SIZE)/40)<0.3){
+	    this.isFullCube = false;
+	    continue;
+	}
 	voxels[[i,j,k]]=terrainTypedColor(1,seed).map(function(x){return x/255.});
 	seed = seed + (seed<<3);
     }}}
