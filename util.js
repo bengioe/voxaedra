@@ -95,6 +95,12 @@ function unproject(winx, winy, winz) {
  */
 var SimplexNoise = function(r) {
 	if (r == undefined) r = Math;
+    var x = 871, y=9812,z=1092;
+    r = {random:function(){
+	x = (171 * x) % 30269
+	y = (172 * y) % 30307
+	z = (170 * z) % 30323
+	return (x/30269.0 + y/30307.0 + z/30323.0) % 1.0;}};
   this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0], 
                                  [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1], 
                                  [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]]; 

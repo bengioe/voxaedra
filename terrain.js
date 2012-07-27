@@ -82,7 +82,7 @@ function Chunk(terrain, pos){
 	}}}
     }
 }
-Chunk.SIZE = 16;
+Chunk.SIZE = 8;
 
 var seed = 142857;
 var _noise = new SimplexNoise();
@@ -92,6 +92,7 @@ function Block(terrain, pos){
     this.isFullCube = true;
     var sprite = null;
     var voxels = {};
+    var nvoxels = 0;
     for (var i=0;i<Block.SIZE;i++){
     for (var j=0;j<Block.SIZE;j++){
     for (var k=0;k<Block.SIZE;k++){
@@ -103,8 +104,12 @@ function Block(terrain, pos){
 	}
 	voxels[[i,j,k]]=terrainTypedColor(1,seed).map(function(x){return x/255.});
 	seed = seed + (seed<<3);
+	nvoxels++;
     }}}
     this.build_sprite = function(){
+	if (nvoxels==0){
+	    return;
+	}
 	sprite = new VoxelSprite(voxels);
     }
     this.checkIfDrawNeeded = function(){
@@ -115,7 +120,6 @@ function Block(terrain, pos){
 	    !terrain.getBlock([pos[0],pos[1]-1,pos[2]]).isFullCube ||
 	    !terrain.getBlock([pos[0],pos[1],pos[2]+1]).isFullCube ||
 	    !terrain.getBlock([pos[0],pos[1],pos[2]-1]).isFullCube){
-	    console.log(pos);
 	    this.build_sprite()
 	    //todo, si c'est plein partout autour, aussi bien disable le sprite
 	}
