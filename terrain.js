@@ -7,7 +7,8 @@ A bit of vocabulary:
   area. It contains N^3 Blocks, and references to TerrainObjects
 
 - A Block, is an M sided cube containing information about it's
-  nature/contents.
+  nature/contents. Blocks are either full of a BlockMaterial, or empty
+  and containing TerrainObjects
 
 - A TerrainObject, an object in voxel space with various attributes.
 
@@ -55,15 +56,21 @@ var derp = 0, herp =0;
 function Chunk(terrain, pos){
     var blocks = {};
     var t0 = new Date().getTime();
+    var voxels = {};
     for (var i=0;i<Chunk.SIZE;i++){
     for (var j=0;j<Chunk.SIZE;j++){
     for (var k=0;k<Chunk.SIZE;k++){
-	blocks[[i,j,k]] = new Block(terrain,[i+pos[0]*Chunk.SIZE,
-					     j+pos[1]*Chunk.SIZE,
-					     k+pos[2]*Chunk.SIZE]);
+	var b = new Block(terrain,[i+pos[0]*Chunk.SIZE,
+				   j+pos[1]*Chunk.SIZE,
+				   k+pos[2]*Chunk.SIZE]);
+	if (b.isFullCube){
+	    voxels[[i,j,k]] = b.voxel;
+	}
+	blocks[[i,j,k]] = b;
     }}}
     console.log(new Date().getTime()-t0);
     console.log(derp+"+"+herp);
+    var sprite = new VoxelSprite(voxels,Block.SIZE);
     this.updateBlocks = function(){
 	for (var i=0;i<Chunk.SIZE;i++){
 	for (var j=0;j<Chunk.SIZE;j++){
@@ -75,63 +82,37 @@ function Chunk(terrain, pos){
 	return blocks[pos];
     }
     this.draw = function(){
-	for (var i=0;i<Chunk.SIZE;i++){
-	for (var j=0;j<Chunk.SIZE;j++){
-        for (var k=0;k<Chunk.SIZE;k++){	
-	    blocks[[i,j,k]].draw();
-	}}}
+	sprite.draw()
     }
 }
-Chunk.SIZE = 8;
+Chunk.SIZE = 32;
 
 var seed = 142857;
 var _noise = new SimplexNoise();
 function Block(terrain, pos){
     this.pos = pos
-    var t0 = new Date().getTime();
-    this.isFullCube = true;
-    var sprite = null;
-    var voxels = {};
-    var nvoxels = 0;
-    for (var i=0;i<Block.SIZE;i++){
-    for (var j=0;j<Block.SIZE;j++){
-    for (var k=0;k<Block.SIZE;k++){
-	if (_noise.noise3d((i+pos[0]*Block.SIZE)/80,
-			   (j+pos[1]*Block.SIZE)/80,
-			   (k+pos[2]*Block.SIZE)/40)<0.3){
-	    this.isFullCube = false;
-	    continue;
-	}
-	voxels[[i,j,k]]=terrainTypedColor(1,seed).map(function(x){return x/255.});
-	seed = seed + (seed<<3);
-	nvoxels++;
-    }}}
-    this.build_sprite = function(){
-	if (nvoxels==0){
-	    return;
-	}
-	sprite = new VoxelSprite(voxels);
+    /** this variable is true if this block cannot let light pass
+	under any circumstance **/
+    this.isFullCube = false;
+    this.voxel = null;
+    if (_noise.noise3d((pos[0])/80,
+		       (pos[1])/80,
+		       (pos[2])/10)>0.3){
+	this.voxel = terrainTypedColor(1,seed).map(function(x){return x/255.});
+	this.isFullCube = true;
     }
+    seed = seed + (seed<<3);
     this.checkIfDrawNeeded = function(){
-	if (sprite!==null){return;}
+	//if (sprite!==null){return;}
 	if (!terrain.getBlock([pos[0]+1,pos[1],pos[2]]).isFullCube ||
 	    !terrain.getBlock([pos[0]-1,pos[1],pos[2]]).isFullCube ||
 	    !terrain.getBlock([pos[0],pos[1]+1,pos[2]]).isFullCube ||
 	    !terrain.getBlock([pos[0],pos[1]-1,pos[2]]).isFullCube ||
 	    !terrain.getBlock([pos[0],pos[1],pos[2]+1]).isFullCube ||
 	    !terrain.getBlock([pos[0],pos[1],pos[2]-1]).isFullCube){
-	    this.build_sprite()
-	    //todo, si c'est plein partout autour, aussi bien disable le sprite
+	    return true;
 	}
 	    
-    }
-    this.draw = function(){
-	if (sprite!==null){
-	    var s = Block.SIZE;
-	    viewMatrix = mat4.translate(viewMatrix, [pos[0]*s,pos[1]*s,pos[2]*s-s]);
-	    sprite.draw();
-	    viewMatrix = mat4.translate(viewMatrix, [-pos[0]*s,-pos[1]*s,-pos[2]*s+s]);
-	}
     }
 }
 Block.SIZE = 8;

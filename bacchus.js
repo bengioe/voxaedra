@@ -107,7 +107,8 @@ var _cubenormals = [
  * { [x,y,z] : [r,g,b,[a]] , ...}
  * note: alpha not supported yet.
  */
-function VoxelSprite(voxels){
+function VoxelSprite(voxels, scale){
+    scale = scale || 1;
     var start = new Date().getTime();
     // quads is a list of [pos,delta_index]
     // delta_index is the index the direction in _cubedelta
@@ -137,9 +138,9 @@ function VoxelSprite(voxels){
 	var verts = _cubevertices[quads[i][2]];
 	var norm = _cubenormals[quads[i][2]];
 	for (var j=4;j--;){
-	    vertices.push(vox[0]+verts[j*3]*0.5);
-	    vertices.push(vox[1]+verts[j*3+1]*0.5);
-	    vertices.push(vox[2]+verts[j*3+2]*0.5);
+	    vertices.push(scale*(vox[0]+verts[j*3  ]*0.5));
+	    vertices.push(scale*(vox[1]+verts[j*3+1]*0.5));
+	    vertices.push(scale*(vox[2]+verts[j*3+2]*0.5));
             colors.push.apply(colors,color);
 	    normals.push.apply(normals,norm);
 	}
@@ -156,7 +157,7 @@ function VoxelSprite(voxels){
 	rawSprite.destroy();
     }
     var end = new Date().getTime();
-    //console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
+    console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
 }
 
 

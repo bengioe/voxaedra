@@ -95,7 +95,7 @@ function unproject(winx, winy, winz) {
  */
 var SimplexNoise = function(r) {
 	if (r == undefined) r = Math;
-    var x = 871, y=9812,z=1092;
+    var x = 3, y=9812,z=1092;
     r = {random:function(){
 	x = (171 * x) % 30269
 	y = (172 * y) % 30307
