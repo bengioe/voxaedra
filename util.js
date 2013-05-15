@@ -51,7 +51,7 @@ function unproject(winx, winy, winz) {
 	
         var inf = [];
         var pm = viewMatrix, mm = projMatrix;
-        var viewport = [0, 0, 300, 300];
+        var viewport = [0, 0, 800, 300];
         //Calculation for inverting a matrix, compute projection x modelview; then compute the inverse
         var m = mat4.set(mm, mat4.create());
 
@@ -63,7 +63,6 @@ function unproject(winx, winy, winz) {
         inf[1]=(winy-viewport[1])/viewport[3]*2.0-1.0;
         inf[2]=2.0*winz-1.0;
         inf[3]=1.0;
-	
         //Objects coordinates
         var out = vec4.create();
         mat4.multiplyVec4(m, inf, out);
@@ -76,12 +75,13 @@ function unproject(winx, winy, winz) {
     else{
 	var a = unproject(winx, winy, 0);
 	var b = unproject(winx, winy, 1);
-        return vec3.normalize(vec3.subtract(b, a));
+        return vec3.normalize(vec3.subtract(b, a, [0,0,0,0]));
     }
 }
 
 /*****************************************
    PERLIN NOISE
+ I (bengioe) did not write this code!!!
 */
 // Ported from Stefan Gustavson's java implementation
 // http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf

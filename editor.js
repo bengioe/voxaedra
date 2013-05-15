@@ -177,6 +177,7 @@ function grid_update(){
 
 function drawFrame(){
     var start = new Date().getTime();
+    camAngles = camera.getAngles();
 
     camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
 	      camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
