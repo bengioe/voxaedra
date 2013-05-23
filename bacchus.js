@@ -38,24 +38,62 @@ var mouseWinPos = [0,0];
  */
 function StaticWorldObject(spriteParam, pos){
     var pos = pos || [0,0,0];
-    var sprite = {draw:function(){}};
+    this._sprite = {draw:function(){}};
+    var self = this;
     if (typeof spriteParam === "string"){
         loadBinaryFile("models/"+spriteParam,
             function(data){
-                sprite = loadVOBJ(data).sprite;
+                self._sprite = loadVOBJ(data).sprite;
             });
     }else{
-        sprite = spriteParam;
+        this._sprite = spriteParam;
     }
     this.draw = function(){
         mat4.translate(viewMatrix, [pos[0]+2,pos[1]+2,pos[2]]);
-        sprite.draw();
+        this._sprite.draw();
         mat4.translate(viewMatrix, [-pos[0]-2,-pos[1]-2,-pos[2]]);
 	return this;
     }
     this.setPos = function(p) { pos = p;return this; }
     this.getPos = function() { return pos; }
+}
+
+function AnimatedWorldObject(spriteData, pos){
+    var pos = pos || [0,0,0];
+    this.sprites = {stand:{length:1,
+			   0:{draw:function(){}}},
+		    walk:{length:0}};
+    this.currentAnim = "stand";
+    this.currentMax = 1;
+
+    function load(self,path,anim,sub){
+	loadBinaryFile("models/"+path,
+           function(data){
+	       self.sprites[anim][sub] = loadVOBJ(data).sprite
+	   });
+    }
+
+    if (spriteData.walk !== undefined){
+	var w = {};
+	this.sprites.walk = w;
+	w.length = spriteData.walk.length;
+	for (var i=0;i<w.length;i++){
+	    load(this,spriteData.walk[i],"walk",i);
+	}
+    }
     
+    this.draw = function(){
+        mat4.translate(viewMatrix, [pos[0]+2,pos[1]+2,pos[2]]);
+	var keyframe = Math.floor(new Date().getTime()/200) % this.currentMax;
+        this.sprites[this.currentAnim][keyframe].draw();
+        mat4.translate(viewMatrix, [-pos[0]-2,-pos[1]-2,-pos[2]]);
+	return this;
+    }
+
+    this.setAnim = function(anim){
+	this.currentAnim = anim;
+	this.currentMax = this.sprites[anim].length;
+    }
 }
 
 var _cubedelta = [
@@ -249,7 +287,7 @@ function Camera(mouseHandler){
 	    }
 	}
 	if (doMoveOnMouseDelta){
-	    var ray = [-camPos[0],-camPos[1],camPos[2]]
+	    var ray = [camPos[0],camPos[1],camPos[2]]
 	    targetPos[0] += 0.01*(-dx*ray[1] + dy*ray[0]);
 	    targetPos[1] += 0.01*(dx*ray[0] + dy*ray[1]);
 	}

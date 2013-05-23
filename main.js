@@ -13,11 +13,22 @@ function loaded(){
     setupCanvas("glcontext");
     setupShaders();
 
+    chunk = new PChunk("models/test.bmp");
     loadBinaryFile("models/tree_small.vobj",function(data) {
 	//temp_voxel_sprite = new VoxelSprite({'0,0,0':[1,0,0]});
-	temp_voxel_sprite = loadVOBJ(data).sprite;
+	var x = {
+	    stand : "person.vobj",
+	    walk : {
+		length : 4,
+		0 : "person_walk_1",
+		1 : "person_walk_2",
+		2 : "person_walk_3",
+		3 : "person_walk_4"}
+	};
+	//temp_voxel_sprite = loadVOBJ(data).sprite;
+	temp_voxel_sprite = new AnimatedWorldObject(x);//loadVOBJ(data).sprite;
+	temp_voxel_sprite.setAnim("walk");
 	_draw_interval = setInterval(drawFrame,30);
-        chunk = new PChunk("models/test.bmp");
     });
     Terrain.init()
 }

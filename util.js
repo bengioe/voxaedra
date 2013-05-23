@@ -11,11 +11,18 @@ Array.prototype.sum = function(){
 }
 
 
+var _loadedBinaryFiles = {};
+
 function loadBinaryFile(path, callback){
+    if (_loadedBinaryFiles[path] !== undefined){
+        callback(_loadedBinaryFiles[path]);
+        return;
+    }
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
 	if (xhr.readyState == xhr.DONE) {
 	    if (xhr.status == 200 && xhr.response) {
+                _loadedBinaryFiles[path] = xhr.response;
 		callback(xhr.response);
 	    } else {
 		console.log("Failed to download "+ path + ":" + 
