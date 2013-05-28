@@ -35,6 +35,30 @@ function loadBinaryFile(path, callback){
     xhr.send();
 }
 
+function loadJSONFile(path, callback){
+    if (_loadedBinaryFiles[path] !== undefined){
+        callback(_loadedBinaryFiles[path]);
+        return;
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+	if (xhr.readyState == xhr.DONE) {
+	    if (xhr.status == 200 && xhr.response) {
+		console.log(xhr.response);
+		var r = JSON.parse(xhr.response);
+                _loadedBinaryFiles[path] = r;
+		callback(r);
+	    } else {
+		console.log("Failed to download "+ path + ":" + 
+			    xhr.status + " " + xhr.statusText);
+	    }
+	}
+    }
+    xhr.open("GET", path, true);
+    xhr.responseType = "text";
+    xhr.send();
+}
+
 function ab2str(buf) {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
 }

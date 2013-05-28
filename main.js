@@ -4,7 +4,7 @@
  *****************************************/
 
 var temp_voxel_sprite;
-var chunk;
+var chunk,terrain;
 var temp_canvas = document.createElement("canvas");
 
 
@@ -13,6 +13,7 @@ function loaded(){
     setupCanvas("glcontext");
     setupShaders();
 
+    terrain = new PTerrain("data/maps/isao.map");
     chunk = new PChunk("models/test.bmp");
     loadBinaryFile("models/tree_small.vobj",function(data) {
 	//temp_voxel_sprite = new VoxelSprite({'0,0,0':[1,0,0]});
@@ -34,6 +35,29 @@ function loaded(){
 }
 function stop(){
     clearInterval(_draw_interval);
+}
+
+function PTerrain(path){
+    var chunk;
+    var objects = [];
+    loadJSONFile(path,
+        function(data){
+	    chunk = new PChunk(data.image);
+	    for (var i=0;i<data.objects.length;i++){
+		var o = data.objects[i];
+		objects.push(new StaticWorldObject(o.model,o.pos,o.scale));
+	    }
+            
+	});
+    this.draw = function(){
+	chunk.draw();
+	for (var i=0;i<objects.length;i++){
+	    objects[i].draw();
+        }
+    }
+    this.intersectsCameraRay = function(cameraPos,cameraRay){
+	return chunk.intersectsCameraRay(cameraPos,cameraRay);
+    }
 }
 
 function PChunk(path){
@@ -121,9 +145,9 @@ function drawFrame(){
 
     //mat4.translate(viewMatrix, [0,0,1], viewMatrix);
     //Terrain.draw(); 
-    trans = chunk.intersectsCameraRay(camera.getPos(),
-				      camera.computeRay());//camera.voxelUnderMouse();
-    chunk.draw();
+    trans = terrain.intersectsCameraRay(camera.getPos(),
+					camera.computeRay());//camera.voxelUnderMouse();
+    terrain.draw();
     document.getElementById("mousevoxel").innerHTML = ":"+trans+":"+camera.computeRay();
     if (trans){
 	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),4), viewMatrix);
