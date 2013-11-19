@@ -2,12 +2,12 @@
     "image":"data/maps/isao.bmp",
     "objects":
     [   
-	{"model":"tree_small.vobj",
-	 "pos":[15,15,0],
-	 "scale":4},
-	{"model":"tree_small.vobj",
-	 "pos":[25,45,0],
-	 "scale":4}
+      {"model":"tree_small.vobj",
+       "pos":[15,15,0],
+       "scale":4},
+      {"model":"tree_small.vobj",
+       "pos":[25,45,0],
+       "scale":4}
     ]
 }
 	
