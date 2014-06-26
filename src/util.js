@@ -37,9 +37,11 @@ function loadBinaryFile(path, callback){
 
 function loadJSONFile(path, callback){
     if (_loadedBinaryFiles[path] !== undefined){
+	console.log("Already loaded "+path);
         callback(_loadedBinaryFiles[path]);
         return;
     }
+    console.log("XHR for "+path);
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
 	if (xhr.readyState == xhr.DONE) {
@@ -54,7 +56,7 @@ function loadJSONFile(path, callback){
 	    }
 	}
     }
-    xhr.open("GET", path, true);
+    xhr.open("GET", path + "?" + (new Date()).getTime(), true);
     xhr.responseType = "text";
     xhr.send();
 }

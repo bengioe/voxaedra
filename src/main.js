@@ -6,7 +6,7 @@
 var temp_voxel_sprite;
 var chunk,terrain;
 var temp_canvas = document.createElement("canvas");
-
+var player;
 
 var _draw_interval;
 function loaded(){
@@ -14,7 +14,7 @@ function loaded(){
     setupShaders();
 
     terrain = new Terrain("data/maps/isao.map");
-    chunk = new TerrainChunk("models/test.bmp");
+    //chunk = new TerrainChunk("models/test.bmp");
     loadBinaryFile("models/tree_small.vobj",function(data) {
 	//temp_voxel_sprite = new VoxelSprite({'0,0,0':[1,0,0]});
 	var x = {
@@ -29,9 +29,10 @@ function loaded(){
 	//temp_voxel_sprite = loadVOBJ(data).sprite;
 	temp_voxel_sprite = new AnimatedWorldObject(x);//loadVOBJ(data).sprite;
 	temp_voxel_sprite.setAnim("walk");
-	_draw_interval = setInterval(drawFrame,30);
+	_draw_interval = setInterval(drawFrame,50);
     });
-    Terrain.init()
+    player = new Player();
+    //Terrain.init()
 }
 function stop(){
     clearInterval(_draw_interval);
@@ -87,14 +88,21 @@ var _key = {
     right:39,
     down:40,
     a:65,
+    b:66,
     d:68,
     e:69,
+    f:70,
+    g:71,
+    h:72,
+    i:73,
+    j:74,
+    k:75,
+    l:76,
     q:81,
     s:83,
     w:87,
     z:90,
 }
-
 
 var _keystate = {};
 
@@ -102,17 +110,17 @@ document.onkeydown = function(evt){
     camAngles = camera.getAngles(); 
     var k = evt.keyCode;
     _keystate[k] = _key.PRESSED;
-    if (k==_key.s){
+    if (k==_key.i){
         camAngles[0]+=10;
-    }else if (k==_key.w){
+    }else if (k==_key.k){
         camAngles[0]-=10;
     }/*else if (k==_key.q){
         camAngles[0]+=10.1;
     }else if (k==_key.e){
         camAngles[0]-=10.1;
-    }*/else if (k==_key.a){
+    }*/else if (k==_key.j){
         camAngles[2]-=1.570796;
-    }else if (k==_key.d){
+    }else if (k==_key.l){
         camAngles[2]+=1.570796;
     }else if (k==_key.up){
         camera.moveTargetPos(-1,-1,0);
@@ -124,7 +132,11 @@ document.onkeydown = function(evt){
         camera.moveTargetPos(-1,1,0);
     }else if (k==_key.ctrl){
 	camera.moveOnMouseDelta(true);
-    }else{
+    }// movement
+    else if (k==_key.w){
+	
+    }
+    else{
         console.log(k);
     }
     camera.update();

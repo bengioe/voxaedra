@@ -14,9 +14,11 @@ function StaticWorldObject(spriteParam, pos, scale){
     this._sprite = {draw:function(){}};
     var self = this;
     if (typeof spriteParam === "string"){
+	console.log("loading "+spriteParam);
         loadBinaryFile("models/"+spriteParam,
             function(data){
                 self._sprite = loadVOBJ(data).sprite;
+		console.log("loaded "+spriteParam);
             });
     }else{
         this._sprite = spriteParam;

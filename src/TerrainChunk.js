@@ -1,5 +1,68 @@
 
 
+
+/*
+  TerrainChunk is an octree of TerrainChunks, leading to Block leaves at level 0
+ */
+function TerrainChunkOld(parent, type, level, position){
+    this.level = level;
+    /*
+      x ->
+      y |
+        V
+      z \
+         -|
+     */
+    this.subchunks = [0,0,
+		      0,0,	      
+		        0,0,
+		        0,0];
+    this.parent = parent
+    // position relative to parent
+    this.relpos = position;
+    // true position, where
+    // position * (1>>level) is actually the position of the first leaf of the first subchunk
+    this.abspos = [ Math.floor(parent.abspos[0] + (1 << (level+1)) * position[0]),
+		    Math.floor(parent.abspos[1] + (1 << (level+1)) * position[1]),
+		    Math.floor(parent.abspos[2] + (1 << (level+1)) * position[2]) ]
+    console.log("level:"+level+"  "+JSON.stringify(this.abspos));
+    var nexttype = "full";
+    if (level <= 1){
+	nexttype = "blocks";
+    }
+    if (type === "full"){
+	for (var i=0;i<8;i++){
+	    this.subchunks[i] = new TerrainChunk(this, nexttype, level-1,
+						 [i%2, Math.floor((i%4)/2), Math.floor(i/4)]);
+	}
+	this.draw = function(){
+	    for (var i=0;i<8;i++){
+		this.subchunks[i].draw();
+	    }
+	}
+    }else if (type === "blocks"){
+	var blocks = {};
+	for (var i=0;i<8;i++){
+	    var bpos = [this.abspos[0] + i%2, 
+                        this.abspos[1] + Math.floor((i%4)/2),
+			this.abspos[2] + Math.floor(i/4)];
+	    this.subchunks[i] = new Block("ground", bpos);
+	    blocks[bpos] = this.subchunks[i].sample();
+	}
+	//console.log(JSON.stringify(blocks));
+	var sprite = new VoxelSprite(blocks);
+	this.draw = function(){
+	    sprite.draw();
+	}
+    }else{
+	console.log("Unknown type: "+type);
+    }
+
+    this.intersectsCameraRay = function(cameraPos, cameraRay){
+	
+    }
+}
+
 function TerrainChunk(path){
     var image = new Image();
     var terrain_grid = {};
@@ -58,7 +121,7 @@ function TerrainChunk(path){
 	return false;
     }
 
-    image.onload = this.init
+    image.onload = this.init;
     image.src = path;
     this.getImage = function(){
         return image;

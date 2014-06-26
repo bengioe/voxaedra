@@ -95,7 +95,7 @@ function VoxelSprite(voxels, scale){
     // delta_index is the index the direction in _cubedelta
     var quads = new Array();
     for (var pos in voxels){
-	    pos = pos.split(',').map(function(x){return parseInt(x,10);});
+		pos = pos.split(',').map(function(x){return parseInt(x,10);});
 	    var color = voxels[pos];
 	    for (var j=6;j--;){
 	        var d = _cubedelta[j];
@@ -126,19 +126,21 @@ function VoxelSprite(voxels, scale){
 	        normals.push.apply(normals,norm);
 	    }
 	    indexes = indexes.concat([index_at,index_at+1,index_at+2,
-				                  index_at,index_at+2,index_at+3])
+								  index_at,index_at+2,index_at+3])
 	    index_at += 4;
     }
     var rawSprite = new RawRGBSprite(vertices,
-				                     normals,
-				                     colors,
-				                     indexes);
+									 normals,
+									 colors,
+									 indexes);
     this.draw = rawSprite.draw;
     this.destroy = function(){
 	    rawSprite.destroy();
     }
     var end = new Date().getTime();
-    console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
+    if ((end-start) > 15){
+		console.log("Making VoxelSprite took: "+(end-start)+"ms ("+(mid-start)+" + "+(end-mid)+")");
+    }
 }
 
 
@@ -203,45 +205,45 @@ function Camera(mouseHandler){
     var targetPos = [0,0,0];
     var doMoveOnMouseDelta = false;
     this.moveOnMouseDelta = function(b){
-	doMoveOnMouseDelta = b;
+		doMoveOnMouseDelta = b;
     }
     this.getAngles = function(){
         return camAngles;
     }
     mouseHandler.addDeltaMouseHook(function(dx,dy,mousedown){
-	if (mousedown[2]){
-	    camAngles[2]+=0.02*dx;
-	    camAngles[1]+=0.02*dy;
-	    if (camAngles[1] > 1.2){
-		camAngles[1] = 1.2;
-	    } else if (camAngles[1] < 0.15){
-		camAngles[1] = 0.15;
-	    }
-	}
-	if (doMoveOnMouseDelta){
-	    var ray = [camPos[0],camPos[1],camPos[2]]
-	    targetPos[0] += 0.01*(-dx*ray[1] + dy*ray[0]);
-	    targetPos[1] += 0.01*(dx*ray[0] + dy*ray[1]);
-	}
-	self.update()
+		if (mousedown[2]){
+			camAngles[2]+=0.02*dx;
+			camAngles[1]+=0.02*dy;
+			if (camAngles[1] > 1.6){
+				camAngles[1] = 1.6;
+			} else if (camAngles[1] < 0.15){
+				camAngles[1] = 0.15;
+			}
+		}
+		if (doMoveOnMouseDelta){
+			var ray = [camPos[0],camPos[1],camPos[2]]
+			targetPos[0] += 0.01*(-dx*ray[1] + dy*ray[0]);
+			targetPos[1] += 0.01*(dx*ray[0] + dy*ray[1]);
+		}
+		self.update()
     });
     /* this gives the ground pos:
        var t = -camPos[2]/camRay[2];
        var trans = vec3.add(camPos,vec3.scale(camRay,t,vec3.create()),
 	   vec3.create());*/
     mouseHandler.addScrollHook(function(d){
-	if (d>0){
-	    camAngles[0]+=7;
-	    if (camAngles[0]>100)
-		camAngles[0] = 100;
-	}
-	else{
-	    camAngles[0]-=7;
-	    if (camAngles[0] < 10){
-		camAngles[0] = 10;
-	    }
-	}
-	self.update();
+		if (d>0){
+			camAngles[0]+=7;
+			if (camAngles[0]>100)
+				camAngles[0] = 100;
+		}
+		else{
+			camAngles[0]-=7;
+			if (camAngles[0] < 10){
+				camAngles[0] = 10;
+			}
+		}
+		self.update();
     });
     this.getTargetPos = function(){
         return targetPos;
@@ -250,19 +252,19 @@ function Camera(mouseHandler){
         targetPos = [dx+targetPos[0],dy+targetPos[1],dz+targetPos[2]];
     }
     this.getRay = function(){
-	return vec3.scale(vec3.normalize(vec3.create(camPos)),-1);
+		return vec3.scale(vec3.normalize(vec3.create(camPos)),-1);
     }
     this.update = function(){
-	camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
-		  camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
-		  camAngles[0]*Math.cos(camAngles[1])];
+		camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
+				  camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
+				  camAngles[0]*Math.cos(camAngles[1])];
     };
     this.getPos = function(){
-	return [camPos[0]+targetPos[0],camPos[1]+targetPos[1],camPos[2]+targetPos[2]];
+		return [camPos[0]+targetPos[0],camPos[1]+targetPos[1],camPos[2]+targetPos[2]];
     };
     this.computeRay = function(){
 	    camRay = unproject(mouseWinPos[0],
-			       300-mouseWinPos[1]);
+						   300-mouseWinPos[1]);
 	    return camRay;
     }
     this.voxelUnderMouse = function(){
@@ -328,17 +330,17 @@ function MouseEventHandler(canvas){
 	    return scrollCount;
     }
     var movehook = function(event){
-	var mousex = event.clientX - canvas.offsetLeft;
-	var mousey = event.clientY - canvas.offsetTop;
-	mouseWinPos = [mousex,mousey];
-	document.getElementById("mousepos").innerHTML = mousex+":"+mousey;//+":"+camRay;
-	for (i in deltaMouseHooks){
-	    deltaMouseHooks[i](lastmousepos[0]-mousex,
-			       lastmousepos[1]-mousey,
-			       mousedown,
-			       is_ctrl_down);
-	}
-	lastmousepos = [mousex,mousey];
+		var mousex = event.clientX - canvas.offsetLeft;
+		var mousey = event.clientY - canvas.offsetTop;
+		mouseWinPos = [mousex,mousey];
+		document.getElementById("mousepos").innerHTML = mousex+":"+mousey;//+":"+camRay;
+		for (i in deltaMouseHooks){
+			deltaMouseHooks[i](lastmousepos[0]-mousex,
+							   lastmousepos[1]-mousey,
+							   mousedown,
+							   is_ctrl_down);
+		}
+		lastmousepos = [mousex,mousey];
     }
     var scrollhook = function(event){
 	    var d = event.detail ? event.detail : -event.wheelDelta;
@@ -391,10 +393,10 @@ function loadVOBJ(buffer){
 		        [udata[i+3]/255.,udata[i+4]/255.,udata[i+5]/255.];
 	    }
 	    return {sprite: new VoxelSprite(voxels),
-		        voxels: voxels};
+				voxels: voxels};
     }
     else {
-	    alert("Unknown VOBJ version: "+version);
+		alert("Unknown VOBJ version: "+version);
     }
 }
 
