@@ -217,8 +217,8 @@ function Camera(mouseHandler){
 			camAngles[1]+=0.02*dy;
 			if (camAngles[1] > 1.6){
 				camAngles[1] = 1.6;
-			} else if (camAngles[1] < 0.15){
-				camAngles[1] = 0.15;
+			} else if (camAngles[1] < -0.15){
+				camAngles[1] = -0.15;
 			}
 		}
 		if (doMoveOnMouseDelta){

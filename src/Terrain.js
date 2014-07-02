@@ -4,7 +4,7 @@
 function Terrain(path){
 
     var objects = [];
-    var level = new  TerrainLevel(2,2);
+    var level = new  TerrainLevel(12,12);
     console.log(path);
     loadJSONFile(path,
 		 function(data){
@@ -50,7 +50,7 @@ function TerrainLevel(w,h){
 		return it;
 	    }
 	}
-	return [0,0,0];
+	return undefined;
     }
 }
 
@@ -68,7 +68,9 @@ function TerrainTile(x,y){
 	}
     }
     this.sprite = new VoxelSprite(voxels, this.scale,
-				  this.pos.map(function(x){return x*tile_size;}));
+				  [this.pos[0]*tile_size,
+				   this.pos[1]*tile_size,
+				   this.pos[2]*tile_size-0.75]);
 
     this.draw = function(){
 	var pos = this.pos;
@@ -82,6 +84,25 @@ function TerrainTile(x,y){
         //mat4.translate(viewMatrix, [-pos[0]*k,-pos[1]*k,-pos[2]*k]);
 	//mat4.scale(viewMatrix,[1/this.scale,1/this.scale,1/this.scale]);
 	return this;
+    }
+
+    this.intersectsCameraRay = function(cam, ray){
+	var p = this.pos;
+	// the tile is a square defined by a plane on px,py,pz with
+	// normal 0,0,1 (z-up). Thus the intersection is when the ray
+	// (cx + t*rx, cy + t*ry, cz + t * rz) reaches cz + t * rz = pz
+	// that is when t = (pz - cz) / rz
+	var t = (p[2] - cam[2]) / ray[2];
+	// the x and y positions at this point are:
+	var ix = cam[0] + t * ray[0];
+	var iy = cam[1] + t * ray[1];
+	// now we can check if they are within this tile
+	if (ix >= p[0] * tile_size * this.scale &&
+	    ix <= (p[0]+1) * tile_size * this.scale &&
+	    iy >= p[1] * tile_size * this.scale &&
+	    iy <= (p[1]+1) * tile_size * this.scale)
+	    return p;
+	return undefined;
     }
 }
 

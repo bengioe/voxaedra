@@ -62,9 +62,9 @@ function drawFrame(){
     terrain.draw();
     document.getElementById("mousevoxel").innerHTML = ":"+trans+":"+camera.computeRay();
     if (trans){
-	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),4), viewMatrix);
+	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),8), viewMatrix);
 	temp_voxel_sprite.draw();
-	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),-4), viewMatrix);
+	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),-8), viewMatrix);
     }
 
     drawFrame.timeSum += new Date().getTime() - start;
