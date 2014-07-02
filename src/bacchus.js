@@ -88,24 +88,25 @@ var _cubenormals = [
  * note: alpha not supported yet.
  * note: 0<=r,g,b,a<=1.0
  */
-function VoxelSprite(voxels, scale){
+function VoxelSprite(voxels, scale, offset){
+    offset = offset || [0, 0, 0];
     scale = scale || 1;
     var start = new Date().getTime();
     // quads is a list of [pos,delta_index]
     // delta_index is the index the direction in _cubedelta
     var quads = new Array();
     for (var pos in voxels){
-		pos = pos.split(',').map(function(x){return parseInt(x,10);});
-	    var color = voxels[pos];
-	    for (var j=6;j--;){
-	        var d = _cubedelta[j];
-	        var vj = voxels[[pos[0]+d[0],
-			                 pos[1]+d[1],
-			                 pos[2]+d[2]]];
-	        if (vj === undefined){
-		        quads.push([pos,color,j]);
-	        }
+	var color = voxels[pos];
+	pos = pos.split(',').map(function(x){return parseInt(x,10);});
+	for (var j=6;j--;){
+	    var d = _cubedelta[j];
+	    var vj = voxels[[pos[0]+d[0],
+			     pos[1]+d[1],
+			     pos[2]+d[2]]];
+	    if (vj === undefined){
+		quads.push([pos,color,j]);
 	    }
+	}
     }
     var mid = new Date().getTime();
     var vertices = [];
@@ -119,20 +120,20 @@ function VoxelSprite(voxels, scale){
 	    var verts = _cubevertices[quads[i][2]];
 	    var norm = _cubenormals[quads[i][2]];
 	    for (var j=4;j--;){
-	        vertices.push(scale*(vox[0]+verts[j*3  ]*0.5));
-	        vertices.push(scale*(vox[1]+verts[j*3+1]*0.5));
-	        vertices.push(scale*(vox[2]+verts[j*3+2]*0.5));
-            colors.push.apply(colors,color);
+	        vertices.push(scale*(vox[0]+verts[j*3  ]*0.5+offset[0]));
+	        vertices.push(scale*(vox[1]+verts[j*3+1]*0.5+offset[1]));
+	        vertices.push(scale*(vox[2]+verts[j*3+2]*0.5+offset[2]));
+		colors.push.apply(colors,color);
 	        normals.push.apply(normals,norm);
 	    }
 	    indexes = indexes.concat([index_at,index_at+1,index_at+2,
-								  index_at,index_at+2,index_at+3])
+				      index_at,index_at+2,index_at+3])
 	    index_at += 4;
     }
     var rawSprite = new RawRGBSprite(vertices,
-									 normals,
-									 colors,
-									 indexes);
+				     normals,
+				     colors,
+				     indexes);
     this.draw = rawSprite.draw;
     this.destroy = function(){
 	    rawSprite.destroy();
@@ -198,8 +199,8 @@ function RawRGBSprite(verts,normals,colors,idxs){
  */
 function Camera(mouseHandler){
     // rho, theta, phi
-    var camAngles = [10, 0.9553166182, 3.141592/4];
-    var camPos = [10,-20,-60];
+    var camAngles = [100, 0.9553166182, 3.141592/4];
+    var camPos = [0,0,0];
     var camRay = [0,0,0.1];
     var self = this;
     var targetPos = [0,0,0];
@@ -255,9 +256,9 @@ function Camera(mouseHandler){
 		return vec3.scale(vec3.normalize(vec3.create(camPos)),-1);
     }
     this.update = function(){
-		camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
-				  camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
-				  camAngles[0]*Math.cos(camAngles[1])];
+	camPos = [camAngles[0]*Math.sin(camAngles[1])*Math.cos(camAngles[2]),
+		  camAngles[0]*Math.sin(camAngles[1])*Math.sin(camAngles[2]),
+		  camAngles[0]*Math.cos(camAngles[1])];
     };
     this.getPos = function(){
 		return [camPos[0]+targetPos[0],camPos[1]+targetPos[1],camPos[2]+targetPos[2]];
@@ -309,6 +310,7 @@ function Camera(mouseHandler){
 	    //sideInto.set(lastSideInto);
 	    return [undefined,0,0];//lastUnderMouse.pos;
     }
+    this.update();
 }
 
 function MouseEventHandler(canvas){
@@ -431,6 +433,11 @@ function setupCanvas(can_id){
 	        "It seems your browser does not support WebGL. Sorry.";
     }
     gl.enable(gl.DEPTH_TEST);
+    // todo: fix les cubes dans bacchus.js pour que ceci marche, en
+    // fait en ce moment je crois que TOUTES les faces sont à
+    // l'envers, donc ça devrait être facile à régler, mais ça ne
+    // semble pas affecter tant les performances
+    // gl.enable(gl.CULL_FACE);
 }
 
 /**

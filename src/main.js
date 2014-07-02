@@ -101,6 +101,8 @@ var _key = {
     q:81,
     s:83,
     w:87,
+    x:88,
+    y:89,
     z:90,
 }
 
@@ -133,8 +135,9 @@ document.onkeydown = function(evt){
     }else if (k==_key.ctrl){
 	camera.moveOnMouseDelta(true);
     }// movement
-    else if (k==_key.w){
-	
+    else if (k==_key.x){
+	stop();
+	console.log("stop");
     }
     else{
         console.log(k);
