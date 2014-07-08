@@ -1,6 +1,6 @@
 
 function AnimatedWorldObject(spriteData, pos){
-    var pos = pos || [0,0,0];
+    this.pos = pos || [0,0,0];
     this.sprites = {stand:{length:1,
 			   0:{draw:function(){}}},
 		    walk:{length:0}};
@@ -24,6 +24,7 @@ function AnimatedWorldObject(spriteData, pos){
     }
     
     this.draw = function(){
+	var pos = this.pos.map(function(x){return x*tile_size;});
         mat4.translate(viewMatrix, [pos[0]+2,pos[1]+2,pos[2]]);
 	var keyframe = Math.floor(new Date().getTime()/200) % this.currentMax;
         this.sprites[this.currentAnim][keyframe].draw();

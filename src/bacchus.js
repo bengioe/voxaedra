@@ -352,9 +352,27 @@ function MouseEventHandler(canvas){
     };
     var downhook = function(event){
 	    if (event.which==3){
-	        mousedown[2]=1;
+	        //mousedown[2]=1;
+		console.log(current_selection);
+		if (current_selection !== undefined &&
+		    current_selection.constructor == Unit){
+		    var t = trans;
+		    current_selection.pos = t.pos;
+		}
 	    }
 	    if (event.which==1){
+		var t = trans;
+		current_selection = undefined;
+		console.log(trans);
+		if (t !== undefined &&
+		    t.constructor == TerrainTile){
+		    for (var i=0;i<units.length;i++){
+			console.log(units[i].pos);
+			if (units[i].pos[0] == t.pos[0] && units[i].pos[1] == t.pos[1]){
+			    current_selection = units[i]; break;
+			}
+		    }
+		}
 	        //document.getElementById("mousevoxel").innerHTML = voxelUnderMouse();
 	    }
 	    event.cancelBubble = true;

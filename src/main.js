@@ -7,6 +7,8 @@ var temp_voxel_sprite;
 var chunk,terrain;
 var temp_canvas = document.createElement("canvas");
 var player;
+var units = [];
+var current_selection = undefined;
 
 var _draw_interval;
 function loaded(){
@@ -30,6 +32,7 @@ function loaded(){
 	temp_voxel_sprite = new AnimatedWorldObject(x);//loadVOBJ(data).sprite;
 	temp_voxel_sprite.setAnim("walk");
 	_draw_interval = setInterval(drawFrame,50);
+	units.push(new Unit("p1", 1));
     });
     player = new Player();
     //Terrain.init()
@@ -60,10 +63,14 @@ function drawFrame(){
     trans = terrain.intersectsCameraRay(camera.getPos(),
 					camera.computeRay());//camera.voxelUnderMouse();
     terrain.draw();
-    document.getElementById("mousevoxel").innerHTML = ":"+trans+":"+camera.computeRay();
+    for (var i=0; i<units.length; i++){
+	units[i].draw();
+    }
+
+    document.getElementById("mousevoxel").innerHTML = ":"+(trans!==undefined?trans.pos:"-")+":"+camera.computeRay();
     if (trans){
 	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),8), viewMatrix);
-	temp_voxel_sprite.draw();
+	//temp_voxel_sprite.draw();
 	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),-8), viewMatrix);
     }
 

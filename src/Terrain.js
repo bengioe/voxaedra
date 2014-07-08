@@ -54,35 +54,36 @@ function TerrainLevel(w,h){
     }
 }
 
+var tile_width = 4;
+var tile_scale = 2;
+var tile_size = tile_width * tile_scale;
 function TerrainTile(x,y){
-    var tile_size = 4;
     this.pos = [x,y,0];
     this.z = 0;
-    this.scale = 2;
     var voxels = {};
-    for (var i=0;i<tile_size;i++){
-	for (var j=0;j<tile_size;j++){
+    for (var i=0;i<tile_width;i++){
+	for (var j=0;j<tile_width;j++){
 	    for (var k=0;k<=this.z;k++){
-		voxels[[i,j,k]] = [Math.random()*0.1,Math.random()*0.2+0.7,Math.random()*0.05];
+		voxels[[i,j,k]] = [Math.random()*0.1,Math.random()*0.1+0.7,Math.random()*0.05];
 	    }
 	}
     }
-    this.sprite = new VoxelSprite(voxels, this.scale,
-				  [this.pos[0]*tile_size,
-				   this.pos[1]*tile_size,
-				   this.pos[2]*tile_size-0.75]);
+    this.sprite = new VoxelSprite(voxels, tile_scale,
+				  [this.pos[0]*tile_width,
+				   this.pos[1]*tile_width,
+				   this.pos[2]*tile_width-0.75]);
 
     this.draw = function(){
 	var pos = this.pos;
 	// done: -- rendre le scale et translation 
 	// intégré aux voxels, parce que ca coute quand même cher :3 --
 
-	var k = tile_size * this.scale;
-	//mat4.scale(viewMatrix,[this.scale,this.scale,this.scale]);
+	var k = tile_size * tile_scale;
+	//mat4.scale(viewMatrix,[tile_scale,tile_scale,tile_scale]);
         //mat4.translate(viewMatrix, [pos[0]*k,pos[1]*k,pos[2]*k]);
         this.sprite.draw();
         //mat4.translate(viewMatrix, [-pos[0]*k,-pos[1]*k,-pos[2]*k]);
-	//mat4.scale(viewMatrix,[1/this.scale,1/this.scale,1/this.scale]);
+	//mat4.scale(viewMatrix,[1/tile_scale,1/tile_scale,1/tile_scale]);
 	return this;
     }
 
@@ -97,11 +98,11 @@ function TerrainTile(x,y){
 	var ix = cam[0] + t * ray[0];
 	var iy = cam[1] + t * ray[1];
 	// now we can check if they are within this tile
-	if (ix >= p[0] * tile_size * this.scale &&
-	    ix <= (p[0]+1) * tile_size * this.scale &&
-	    iy >= p[1] * tile_size * this.scale &&
-	    iy <= (p[1]+1) * tile_size * this.scale)
-	    return p;
+	if (ix >= p[0] * tile_size &&
+	    ix <= (p[0]+1) * tile_size &&
+	    iy >= p[1] * tile_size &&
+	    iy <= (p[1]+1) * tile_size)
+	    return this;
 	return undefined;
     }
 }
