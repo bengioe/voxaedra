@@ -3,7 +3,10 @@
 
 function Player(){
     var x = {
-	stand : "person.vobj",
+	stand : {
+            length : 1,
+            0 : "person.vobj"
+        },
 	walk : {
 	    length : 4,
 	    0 : "person_walk_1",

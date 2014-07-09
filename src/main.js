@@ -9,6 +9,7 @@ var temp_canvas = document.createElement("canvas");
 var player;
 var units = [];
 var current_selection = undefined;
+var current_tile_shower;
 
 var _draw_interval;
 function loaded(){
@@ -20,7 +21,10 @@ function loaded(){
     loadBinaryFile("models/tree_small.vobj",function(data) {
 	//temp_voxel_sprite = new VoxelSprite({'0,0,0':[1,0,0]});
 	var x = {
-	    stand : "person.vobj",
+	    stand : {
+                length : 1,
+                0 : "person.vobj"
+            },
 	    walk : {
 		length : 4,
 		0 : "person_walk_1",
@@ -30,9 +34,12 @@ function loaded(){
 	};
 	//temp_voxel_sprite = loadVOBJ(data).sprite;
 	temp_voxel_sprite = new AnimatedWorldObject(x);//loadVOBJ(data).sprite;
-	temp_voxel_sprite.setAnim("walk");
-	_draw_interval = setInterval(drawFrame,50);
+	//temp_voxel_sprite.setAnim("walk");
 	units.push(new Unit("p1", 1));
+        var X = {};
+        X[[0,0,0]] = [1,0,0];
+        current_tile_shower = new VoxelSprite(X,8);
+	_draw_interval = setInterval(drawFrame,50);
     });
     player = new Player();
     //Terrain.init()
@@ -52,7 +59,7 @@ function drawFrame(){
 
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(45, canvas.width/canvas.height, 1, 1000.0, projMatrix);
+    mat4.perspective(15, canvas.width/canvas.height, 1, 1000.0, projMatrix);
     mat4.identity(viewMatrix);
 
     viewMatrix = mat4.lookAt(camera.getPos(),camera.getTargetPos(), [0,0,1])
@@ -66,11 +73,13 @@ function drawFrame(){
     for (var i=0; i<units.length; i++){
 	units[i].draw();
     }
+	current_tile_shower.draw();
 
     document.getElementById("mousevoxel").innerHTML = ":"+(trans!==undefined?trans.pos:"-")+":"+camera.computeRay();
     if (trans){
+        trans = trans.pos;
 	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),8), viewMatrix);
-	//temp_voxel_sprite.draw();
+	current_tile_shower.draw();
 	mat4.translate(viewMatrix, vec3.scale(vec3.create(trans),-8), viewMatrix);
     }
 
