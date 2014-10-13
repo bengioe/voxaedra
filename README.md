@@ -3,6 +3,12 @@ voxaedra
 
 Yet another voxel RTS game.
 
+To build, `python build.py`
+To launch, start HTTP server in folder (e.g. `python -m SimpleHTTPServer`), then access it with any WebGL capable browser. Use CTRL+mouse to move the camera.
+
+--
+
+Disregard everything below this line! It has not been updated in months.
 
 Train of Though
 ===============
