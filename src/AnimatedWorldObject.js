@@ -1,5 +1,6 @@
 
 function AnimatedWorldObject(spriteData, pos){
+    console.log(spriteData)
     this.pos = pos || [0,0,0];
     this.sprites = {stand:{length:1,
 			   0:{draw:function(){}}},
@@ -20,6 +21,14 @@ function AnimatedWorldObject(spriteData, pos){
 	w.length = spriteData.walk.length;
 	for (var i=0;i<w.length;i++){
 	    load(this,spriteData.walk[i],"walk",i);
+	}
+    }
+    if (spriteData.stand !== undefined){
+	var w = {};
+	this.sprites.stand = w;
+	w.length = spriteData.stand.length;
+	for (var i=0;i<w.length;i++){
+	    load(this,spriteData.stand[i],"stand",i);
 	}
     }
     

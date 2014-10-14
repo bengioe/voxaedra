@@ -199,7 +199,7 @@ function RawRGBSprite(verts,normals,colors,idxs){
  */
 function Camera(mouseHandler){
     // rho, theta, phi
-    var camAngles = [100, 0.9553166182, 3.141592/4];
+    var camAngles = [500, 0.9553166182, 3.141592/4];
     var camPos = [0,0,0];
     var camRay = [0,0,0.1];
     var self = this;
@@ -223,8 +223,8 @@ function Camera(mouseHandler){
 		}
 		if (doMoveOnMouseDelta){
 			var ray = [camPos[0],camPos[1],camPos[2]]
-			targetPos[0] += 0.01*(-dx*ray[1] + dy*ray[0]);
-			targetPos[1] += 0.01*(dx*ray[0] + dy*ray[1]);
+			targetPos[0] += 0.001*(-dx*ray[1] + dy*ray[0]);
+			targetPos[1] += 0.001*(dx*ray[0] + dy*ray[1]);
 		}
 		self.update()
     });
@@ -235,8 +235,8 @@ function Camera(mouseHandler){
     mouseHandler.addScrollHook(function(d){
 		if (d>0){
 			camAngles[0]+=7;
-			if (camAngles[0]>100)
-				camAngles[0] = 100;
+			if (camAngles[0]>500)
+				camAngles[0] = 500;
 		}
 		else{
 			camAngles[0]-=7;
@@ -265,7 +265,7 @@ function Camera(mouseHandler){
     };
     this.computeRay = function(){
 	    camRay = unproject(mouseWinPos[0],
-						   300-mouseWinPos[1]);
+                               canvas.height-mouseWinPos[1]);
 	    return camRay;
     }
     this.voxelUnderMouse = function(){

@@ -84,7 +84,7 @@ function unproject(winx, winy, winz) {
 	
         var inf = [];
         var pm = viewMatrix, mm = projMatrix;
-        var viewport = [0, 0, 800, 300];
+        var viewport = [0, 0, canvas.width, canvas.height];
         //Calculation for inverting a matrix, compute projection x modelview; then compute the inverse
         var m = mat4.set(mm, mat4.create());
 

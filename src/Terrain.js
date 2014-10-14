@@ -61,8 +61,8 @@ function TerrainTile(x,y){
     this.pos = [x,y,0];
     this.z = 0;
     var voxels = {};
-    for (var i=0;i<tile_width;i++){
-	for (var j=0;j<tile_width;j++){
+    for (var i=0;i<tile_width-1;i++){
+	for (var j=0;j<tile_width-1;j++){
 	    for (var k=0;k<=this.z;k++){
 		voxels[[i,j,k]] = [Math.random()*0.1,Math.random()*0.1+0.7,Math.random()*0.05];
 	    }

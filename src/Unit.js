@@ -3,7 +3,10 @@
 function Unit(owner, type){
 
     var x = {
-	stand : "person.vobj",
+        stand : {
+            length : 1,
+            0 : "person.vobj"
+        },
 	walk : {
 	    length : 4,
 	    0 : "person_walk_1",
@@ -17,7 +20,7 @@ function Unit(owner, type){
     this.owner = owner;
     this.type = type;
     this.pos = [0,0,0];
-    this.vobj.setAnim("walk");
+    //this.vobj.setAnim("walk");
     
     this.draw = function(){
 	this.vobj.pos = this.pos
