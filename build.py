@@ -11,3 +11,4 @@ while 1:
     print(time.strftime("%d:%m:%Y %H:%M:%S"))
     time.sleep(2)
     #raw_input("done.")
+    break
